@@ -14,6 +14,7 @@ model Accounts {
   email    String  @unique @db.VarChar(180)
   password String
   document String? @unique @db.VarChar(20)
+  phone    String  @unique @db.VarChar(20)
 
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
