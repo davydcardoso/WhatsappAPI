@@ -1,13 +1,19 @@
 import "@config/bootstrap";
-import { PrismaSessionsRepository } from "@modules/sessions/repositories/prisma/PrismaSessionsRepository";
+import fs from "fs";
 import { logger } from "@util/logger";
-import { Client, ClientSession as ClientSessionDto } from "whatsapp-web.js";
+import { Sessions } from "@modules/sessions/domain/sessions";
+import { adapterWhatsapp } from "@core/infra/adpters/WhatsappHandlerAdapter";
 import { startWhatsappMonitor } from "./monitor";
 import { Server as SocketServer } from "socket.io";
+import { PrismaSessionsRepository } from "@modules/sessions/repositories/prisma/PrismaSessionsRepository";
 import { createServer as HttpServer } from "http";
-import { adapterWhatsapp } from "@core/infra/adpters/WhatsappHandlerAdapter";
 import { makeStartSessionWhatsappHandler } from "./factories/StartSessionWhatsappHandlerFactory";
-import { Sessions } from "@modules/sessions/domain/sessions";
+import {
+  Client,
+  ClientSession as ClientSessionDto,
+  MessageMedia,
+} from "whatsapp-web.js";
+import { v4 } from "uuid";
 
 type SessionAlreadyStartedData = {
   WABrowserId: string;
@@ -21,6 +27,17 @@ type SendMessageWebsocketData = {
   message: {
     to: string;
     message: string;
+  };
+};
+
+type SendMessageMediaWebsocketData = {
+  token: string;
+  message: {
+    to: string;
+    contents: {
+      media_type: string;
+      media: string;
+    };
   };
 };
 
@@ -155,6 +172,55 @@ socketIo.on("connection", (socket) => {
       logger.error(err.message);
     }
   });
+
+  socket.on(
+    "whatsapp.send-message-media",
+    async (data: SendMessageMediaWebsocketData) => {
+      try {
+        const sessionIndex = sessionsWts.findIndex(
+          (s) => (s.token = data.token)
+        );
+
+        const { to, contents } = data.message;
+
+        new Promise<void>((resolve, reject) => {
+          const fileNameUUID = v4().toUpperCase();
+
+          fs.writeFile(
+            `./public/${fileNameUUID}.${contents.media_type}`,
+            contents.media,
+            "base64",
+            async (err) => {
+              if (err) {
+                logger.error(`Error in send file | token: ${data.token}`);
+                reject(err);
+              }
+
+              const newMediaFile = MessageMedia.fromFilePath(
+                `./public/${fileNameUUID}.${contents.media_type}`
+              );
+
+              await sessionsWts[sessionIndex]
+                .sendMessage(`${to}@c.us`, newMediaFile, {
+                  sendAudioAsVoice: true,
+                })
+                .catch((err) => {
+                  logger.error(
+                    `Error in send message file | Error: ${err.message}`
+                  );
+                });
+
+              fs.unlinkSync(`./public/${fileNameUUID}.${contents.media_type}`);
+
+              resolve();
+            }
+          );
+        });
+      } catch (err) {
+        logger.error(`Error sending message | Erro: ${err.message}`);
+      }
+    }
+  );
 
   socket.on("whatsapp.send-message", async (data: SendMessageWebsocketData) => {
     try {

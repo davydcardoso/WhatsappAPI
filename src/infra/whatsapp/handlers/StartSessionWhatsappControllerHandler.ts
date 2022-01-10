@@ -3,6 +3,9 @@ import { Client, ClientSession } from "whatsapp-web.js";
 import QrCode from "qrcode-terminal";
 import { logger } from "@util/logger";
 import SocketClient from "socket.io-client";
+import { SessionsRepository } from "@modules/sessions/repositories/SessionsRepository";
+import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
+import axios from "axios";
 
 type StartSessionWhatsappHandlerResponse = {
   session: Client;
@@ -11,6 +14,8 @@ type StartSessionWhatsappHandlerResponse = {
 };
 
 export class StartSessionWhatsappHandler implements WhatsappHandler {
+  constructor(private usersRepository: UsersRepository) {}
+
   async perform(
     accountId: string
   ): Promise<StartSessionWhatsappHandlerResponse> {
@@ -18,6 +23,14 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
       async (resolve, reject) => {
         try {
           const whatsapp = new Client({});
+
+          const { webhook, webhookToken } = await this.usersRepository.findById(
+            accountId
+          );
+
+          const api = axios.create({
+            baseURL: webhook.value,
+          });
 
           let sessionWhatsapp: ClientSession;
 
@@ -30,9 +43,22 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
           io.connect();
 
           whatsapp.on("qr", (qrcode) => {
-            if (process.env.LOG_QRCODE) {
+            if (process.env.LOG_QRCODE == "true") {
               QrCode.generate(qrcode, { small: true });
             }
+
+            api
+              .post(`${webhookToken}`, {
+                qrcode,
+              })
+              .then(() => {
+                logger.info(
+                  `Qr code sent to webhook successfully | token: ${accountId}`
+                );
+              })
+              .catch((err) => {
+                logger.error(`Error generating QR code`);
+              });
 
             io.emit("whatsapp.qrcode", {
               token: accountId,
