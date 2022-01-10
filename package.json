@@ -13,8 +13,6 @@
     "http": "node dist/infra/http/server.js",
     "worker": "node dist/infra/queue/worker.js",
     "wts": "node dist/infra/whatsapp/client.js"
-   
-    
   },
   "devDependencies": {
     "@babel/cli": "7.14.8",

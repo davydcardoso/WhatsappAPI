@@ -13,7 +13,7 @@ model Accounts {
   name          String  @db.VarChar(180)
   email         String  @unique @db.VarChar(180)
   password      String
-  document      String? @unique @db.VarChar(20)
+  document      String? @db.VarChar(20)
   phone         String  @unique @db.VarChar(20)
   webhook       String? @unique @db.VarChar(255)
   webhook_token String? @unique @db.VarChar(155)
