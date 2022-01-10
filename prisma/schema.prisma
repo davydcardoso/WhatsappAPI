@@ -15,7 +15,7 @@ model Accounts {
   password      String
   document      String? @db.VarChar(20)
   phone         String  @unique @db.VarChar(20)
-  webhook       String? @unique @db.VarChar(255)
+  webhook       String  @unique @db.VarChar(255)
   webhook_token String? @unique @db.VarChar(155)
 
   created_at DateTime @default(now()) @db.Date
