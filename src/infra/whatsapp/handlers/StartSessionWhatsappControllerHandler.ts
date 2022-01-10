@@ -5,7 +5,7 @@ import { logger } from "@util/logger";
 import SocketClient from "socket.io-client";
 import { SessionsRepository } from "@modules/sessions/repositories/SessionsRepository";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 type StartSessionWhatsappHandlerResponse = {
   session: Client;
@@ -57,7 +57,12 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
                 );
               })
               .catch((err) => {
-                logger.error(`Error generating QR code`);
+                const error = err as AxiosError;
+                logger.error(
+                  `Error generating QR code  | token: ${accountId} | Error: ${JSON.stringify(
+                    error.response.data
+                  )}`
+                );
               });
 
             io.emit("whatsapp.qrcode", {
