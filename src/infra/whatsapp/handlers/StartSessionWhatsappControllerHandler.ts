@@ -42,14 +42,14 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
           io.connect();
 
-          whatsapp.on("qr", (qrcode) => {
+          whatsapp.on("qr", async (qrcode) => {
             if (process.env.LOG_QRCODE == "true") {
               QrCode.generate(qrcode, { small: true });
             }
 
-            api
-              .post(`${webhookToken}`, {
-                qrcode,
+            await api
+              .post(`/${webhookToken}`, {
+                qrcode: qrcode,
               })
               .then(() => {
                 logger.info(
@@ -59,9 +59,11 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
               .catch((err) => {
                 const error = err as AxiosError;
                 logger.error(
-                  `Error generating QR code  | token: ${accountId} | Error: ${JSON.stringify(
-                    error.response.data
-                  )}`
+                  `Error generating QR code  | token: ${accountId} ${
+                    error.response
+                      ? `Error: ${JSON.stringify(error.response.data)}`
+                      : ` ${err}`
+                  }`
                 );
               });
 
