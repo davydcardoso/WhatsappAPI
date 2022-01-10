@@ -4,10 +4,13 @@ import {
   fail,
   forbidden,
   ok,
+  clientError,
 } from "../../../core/infra/HttpResponse";
 import { Middleware } from "../../../core/infra/Middleware";
 import { AccessDeniedError } from "./errors/AccessDeniedError";
 import authConfig from "@config/auth";
+import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
+import { AccountIsNotActivedError } from "@modules/accounts/useCases/AuthenticationUser/errors/AccountIsNotActivedError";
 
 type EnsureAuthenticatedMiddlewareRequest = {
   accessToken: string;

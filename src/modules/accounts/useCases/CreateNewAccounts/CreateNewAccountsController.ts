@@ -13,6 +13,7 @@ type CreateNewAccountsControllerRequest = {
   password: string;
   phone: string;
   document?: string;
+  webhook: string;
 };
 
 export class CreateNewAccountsController implements Controller {
@@ -22,7 +23,7 @@ export class CreateNewAccountsController implements Controller {
     request: CreateNewAccountsControllerRequest
   ): Promise<HttpResponse> {
     try {
-      const { name, email, password, phone, document } = request;
+      const { name, email, password, phone, document, webhook } = request;
 
       const result = await this.createNewAccounts.perform({
         name,
@@ -30,6 +31,7 @@ export class CreateNewAccountsController implements Controller {
         password,
         phone,
         document,
+        webhook,
       });
 
       if (result.isLeft()) {

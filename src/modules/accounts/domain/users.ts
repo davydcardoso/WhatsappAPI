@@ -7,9 +7,11 @@ import { InvalidEmailUserError } from "./errors/InvalidEmailUserError";
 import { InvalidNameUserError } from "./errors/InvalidNameUserError";
 import { InvalidPasswordLengthError } from "./errors/InvalidPasswordLengthError";
 import { InvalidPhoneNumberError } from "./errors/InvalidPhoneNumberError";
+import { InvalidWebhookAccountError } from "./errors/InvalidWebhookAccountError";
 import { Name } from "./name";
 import { Password } from "./password";
 import { Phone } from "./phone";
+import { Webhook } from "./webhook";
 
 interface UsersProps {
   name: Name;
@@ -18,6 +20,8 @@ interface UsersProps {
   password: Password;
   phone: Phone;
   document?: Document;
+  webhook?: Webhook;
+  webhookToken?: string;
 }
 
 export class Users extends Entity<UsersProps> {
@@ -45,6 +49,14 @@ export class Users extends Entity<UsersProps> {
     return this.props.document;
   }
 
+  get webhook() {
+    return this.props.webhook;
+  }
+
+  get webhookToken() {
+    return this.props.webhookToken;
+  }
+
   private constructor(props: UsersProps, id?: string) {
     super(props, id);
   }
@@ -57,7 +69,8 @@ export class Users extends Entity<UsersProps> {
     | InvalidEmailUserError
     | InvalidPasswordLengthError
     | InvalidPhoneNumberError
-    | InvalidDocumentUserError,
+    | InvalidDocumentUserError
+    | InvalidWebhookAccountError,
     Users
   > {
     const users = new Users(props, id);

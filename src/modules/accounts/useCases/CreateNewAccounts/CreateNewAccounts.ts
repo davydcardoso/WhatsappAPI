@@ -7,10 +7,12 @@ import { InvalidEmailUserError } from "@modules/accounts/domain/errors/InvalidEm
 import { InvalidNameUserError } from "@modules/accounts/domain/errors/InvalidNameUserError";
 import { InvalidPasswordLengthError } from "@modules/accounts/domain/errors/InvalidPasswordLengthError";
 import { InvalidPhoneNumberError } from "@modules/accounts/domain/errors/InvalidPhoneNumberError";
+import { InvalidWebhookAccountError } from "@modules/accounts/domain/errors/InvalidWebhookAccountError";
 import { Name } from "@modules/accounts/domain/name";
 import { Password } from "@modules/accounts/domain/password";
 import { Phone } from "@modules/accounts/domain/phone";
 import { Users } from "@modules/accounts/domain/users";
+import { Webhook } from "@modules/accounts/domain/webhook";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
 import { v4 } from "uuid";
 import { AccountAlreadyExistsError } from "./errors/AccountAlreadyExistsError";
@@ -21,6 +23,7 @@ type CreateNewAccountsRequest = {
   password: string;
   phone: string;
   document?: string;
+  webhook: string;
 };
 
 type CreateNewAccountsResponse = Either<
@@ -28,7 +31,8 @@ type CreateNewAccountsResponse = Either<
   | InvalidEmailUserError
   | InvalidPasswordLengthError
   | InvalidPhoneNumberError
-  | InvalidDocumentUserError,
+  | InvalidDocumentUserError
+  | InvalidWebhookAccountError,
   CreateNewAccountsResponseData
 >;
 
@@ -48,12 +52,16 @@ export class CreateNewAccounts {
     password,
     phone,
     document,
+    webhook,
   }: CreateNewAccountsRequest): Promise<CreateNewAccountsResponse> {
     const nameOrError = Name.create(name);
     const emailOrError = Email.create(email);
     const passwordOrError = Password.create(password);
     const phoneOrError = Phone.create(phone);
-    const documentOrError = Document.create(document);
+    const documentOrError = Document.create(document || "000.000.000-00");
+    const webhookOrError = Webhook.create(webhook);
+
+    const tokenWebhook = v4().toUpperCase();
 
     if (nameOrError.isLeft()) {
       return left(new InvalidNameUserError(name));
@@ -75,6 +83,10 @@ export class CreateNewAccounts {
       return left(new InvalidDocumentUserError(document));
     }
 
+    if (webhookOrError.isLeft()) {
+      return left(new InvalidWebhookAccountError(webhook));
+    }
+
     const userOrError = Users.create({
       name: nameOrError.value,
       email: emailOrError.value,
@@ -82,6 +94,8 @@ export class CreateNewAccounts {
       phone: phoneOrError.value,
       actived: false,
       document: documentOrError.value,
+      webhook: webhookOrError.value,
+      webhookToken: tokenWebhook,
     });
 
     if (userOrError.isLeft()) {
@@ -108,7 +122,9 @@ export class CreateNewAccounts {
         Segue os dados de sua conta..: \n
         E-mail: ${user.email.value}
         Whatsapp: ${user.phone.value}
-        Documento (CPF/CNPJ): ${user.phone.value}
+        Documento (CPF/CNPJ): ${user.document.value}
+        Webhook: ${user.webhook.value}
+        Webhook Token: ${user.webhookToken}
         
         Seu cadastro está sendo analisado, assim que nossa equipe finalizar o processo 
         você receberá um email e uma mensagem no whatsapp avisando a finalização do processo.. \n

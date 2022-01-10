@@ -8,8 +8,13 @@
   "scripts": {
     "dev:http": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --exit-child --clear -r tsconfig-paths/register src/infra/http/server.ts",
     "dev:worker": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --exit-child --clear -r tsconfig-paths/register src/infra/queue/worker.ts",
-    "dev:wts": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --exit-child --clear -r tsconfig-paths/register src/infra/whatsapp/consumer.ts",
-    "dev:test": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --exit-child --clear -r tsconfig-paths/register src/infra/whatsapp/client.ts"
+    "dev:wts": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --exit-child --clear -r tsconfig-paths/register src/infra/whatsapp/client.ts",
+    "build": "babel src --extensions \".ts\" --out-dir dist --copy-files",
+    "http": "node dist/infra/http/server.js",
+    "worker": "node dist/infra/queue/worker.js",
+    "wts": "node dist/infra/whatsapp/client.js"
+   
+    
   },
   "devDependencies": {
     "@babel/cli": "7.14.8",
@@ -19,6 +24,7 @@
     "@babel/preset-env": "7.15.0",
     "@babel/preset-typescript": "7.15.0",
     "@prisma/client": "^3.7.0",
+    "@types/axios": "^0.14.0",
     "@types/bcrypt": "^5.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-parser": "^1.4.2",
@@ -31,6 +37,8 @@
     "@types/multer": "^1.4.7",
     "@types/nodemailer": "^6.4.4",
     "@types/qrcode-terminal": "^0.12.0",
+    "@types/socket.io": "^3.0.2",
+    "@types/socket.io-client": "^3.0.0",
     "@types/uuid": "^8.3.4",
     "babel-plugin-module-resolver": "4.1.0",
     "ts-node-dev": "^1.1.8",
@@ -40,6 +48,7 @@
   "dependencies": {
     "@sentry/node": "^6.16.1",
     "aws-sdk": "^2.1053.0",
+    "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^1.64.0",
     "cookie-parser": "^1.4.6",
@@ -57,6 +66,8 @@
     "pino-pretty": "^7.3.0",
     "prisma": "^3.7.0",
     "qrcode-terminal": "^0.12.0",
+    "socket.io": "^4.4.1",
+    "socket.io-client": "^4.4.1",
     "uuid": "^8.3.2",
     "whatsapp-web.js": "^1.15.3"
   }

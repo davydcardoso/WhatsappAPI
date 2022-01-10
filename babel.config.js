@@ -13,7 +13,7 @@ module.exports = {
           "@core": "./src/core",
           "@config": "./src/config",
           "@test": "./src/test",
-          "@util": ["./src/utils"],
+          "@util": "./src/utils",
         },
       },
     ],
