@@ -22,11 +22,14 @@ app.use(
   })
 );
 
+app.use(morgan("dev"));
+
 app.use(cookieParser());
 
 app.use(
   express.json({
     type: ["application/json", "text/plain"],
+    limit: "100mb",
   })
 );
 
@@ -45,7 +48,5 @@ app.use(async (err: Error, req: Request, res: Response, _: NextFunction) => {
   logger.error(err);
   return res.status(500).json({ error: "Internal server error" });
 });
-
-app.use(morgan("tiny"));
 
 export { app };

@@ -19,7 +19,7 @@ type AuthenticationUserRequest = {
 };
 
 type AuthenticationUserResponse = Either<
-  Error | InvalidEmailUserError,
+  Error | InvalidEmailUserError | AccountIsNotExistsError,
   TokenResponse
 >;
 

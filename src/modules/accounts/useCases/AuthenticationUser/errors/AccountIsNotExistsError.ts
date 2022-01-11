@@ -2,7 +2,7 @@ import { UseCaseError } from "@core/domain/errors/UseCaseError";
 
 export class AccountIsNotExistsError extends Error implements UseCaseError {
   constructor() {
-    super("Invalid e-mail, this account does not exist");
+    super("User account not found in the system, check access data");
     this.name = "AccountIsNotExistsError";
   }
 }
