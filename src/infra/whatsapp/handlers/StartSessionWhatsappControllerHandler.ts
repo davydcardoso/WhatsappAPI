@@ -56,9 +56,7 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             }
 
             loginAttempts++;
-
-            console.log(loginAttempts);
-
+            
             QrCode.toFile(
               `./public/qrcode/${accountId}.png`,
               qrcode,
