@@ -1,12 +1,13 @@
-import fs from 'fs';
-import axios from "axios";
-import QrCode from "qrcode-terminal";
+import fs from "fs";
+import QrCode from "qrcode";
 import { Redis } from "ioredis";
 import { logger } from "@util/logger";
 import SocketClient from "socket.io-client";
+import axios, { AxiosError } from "axios";
+import { Client, ClientSession } from "whatsapp-web.js";
+import { generate as QrCodeGenerate } from "qrcode-terminal";
 import { WhatsappHandler } from "@core/infra/WhatsappHandler";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
-import { Client, ClientSession } from "whatsapp-web.js";
 
 type StartSessionWhatsappHandlerResponse = {
   session: Client;
@@ -47,40 +48,58 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
           whatsapp.on("qr", async (qrcode) => {
             if (process.env.LOG_QRCODE == "true") {
-              QrCode.generate(qrcode, { small: true });
+              QrCodeGenerate(qrcode, { small: true });
+            }
+
+            if (loginAttempts >= 5) {
+              fs.unlink(`./public/qrcode/${accountId}.png`, (err) => {
+                if (err) {
+                  logger.error(
+                    `Error in exclude qr code file | Error: ${err.message}`
+                  );
+                }
+              });
+              reject(new Error("Maximum attempts reached"));
+              return;
             }
 
             loginAttempts++;
 
-            if (loginAttempts >= 5) {
-              reject(
-                new Error(
-                  "Unable to log in, you have reached the maximum number of attempts"
-                )
-              );
-            }
+            QrCode.toFile(
+              `./public/qrcode/${accountId}.png`,
+              qrcode,
+              {
+                color: {
+                  light: "#FFF",
+                },
+              },
+              (err) => {
+                if (err) {
+                  reject(new Error(err.message));
+                  return;
+                }
+              }
+            );
 
-            
-
-            // await api
-            //   .post(`/${webhookToken}`, {
-            //     qrcode: qrcode,
-            //   })
-            //   .then(() => {
-            //     logger.info(
-            //       `Qr code sent to webhook successfully | token: ${accountId}`
-            //     );
-            //   })
-            //   .catch((err) => {
-            //     const error = err as AxiosError;
-            //     logger.error(
-            //       `Error generating QR code  | token: ${accountId} ${
-            //         error.response
-            //           ? `Error: ${JSON.stringify(error.response.data)}`
-            //           : ` ${err}`
-            //       }`
-            //     );
-            //   });
+            await api
+              .post(`/${webhookToken}`, {
+                qrcode: qrcode,
+              })
+              .then(() => {
+                logger.info(
+                  `Qr code sent to webhook successfully | token: ${accountId}`
+                );
+              })
+              .catch((err) => {
+                const error = err as AxiosError;
+                logger.error(
+                  `Error generating QR code  | token: ${accountId} ${
+                    error.response
+                      ? `Error: ${JSON.stringify(error.response.data)}`
+                      : ` ${err}`
+                  }`
+                );
+              });
 
             io.emit("whatsapp.qrcode", {
               token: accountId,
