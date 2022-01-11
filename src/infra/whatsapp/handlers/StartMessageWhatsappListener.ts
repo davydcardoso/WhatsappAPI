@@ -4,6 +4,31 @@ import { logger } from "@util/logger";
 import axios, { AxiosError } from "axios";
 import { Message, Client } from "whatsapp-web.js";
 
+type WebhookResponseHeaders = {
+  token: string;
+  message_id: string
+}
+
+type WebhookResponseData = {
+  from: string;
+  data: {
+    contact: {
+      id: string;
+      name: string;
+      pushname: string;
+    };
+    message: {
+      is_media: boolean;
+      contents: string;
+      media: {
+        media_url: string;
+        media_type: string;
+        data: object;
+      } | null;
+    };
+  };
+};
+
 export class StartMessageWhatsappListener implements WhatsappMessageListener {
   constructor(private usersRepository: UsersRepository) {}
 
@@ -25,14 +50,38 @@ export class StartMessageWhatsappListener implements WhatsappMessageListener {
       return;
     }
 
+    const contact = await message.getContact();
+    const media = await message.downloadMedia();
+
     const api = axios.create({
       baseURL: webhook.value,
+      headers: {
+        token: token,
+        message_id: message.id.id,
+      },
     });
 
     api
       .post(`/${webhookToken}`, {
         from: message.from,
-        message: message.body,
+        data: {
+          contact: {
+            id: JSON.stringify(contact.id),
+            name: contact.name ? contact.name : "",
+            pushname: contact.pushname ? contact.pushname : "",
+          },
+          message: {
+            is_media: message.hasMedia,
+            contents: message.body,
+            media: message.hasMedia
+              ? {
+                  media_url: media.filename ? media.filename : "",
+                  media_type: media.mimetype ? media.mimetype : "",
+                  data: media.data ? JSON.stringify(media.data) : "",
+                }
+              : null,
+          },
+        },
       })
       .then((response) => {
         if (response.status == 200) {

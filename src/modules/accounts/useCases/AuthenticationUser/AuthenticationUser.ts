@@ -6,6 +6,7 @@ import { JWT } from "@modules/accounts/domain/jwt";
 import { Password } from "@modules/accounts/domain/password";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
 import { AccountIsNotActivedError } from "./errors/AccountIsNotActivedError";
+import { AccountIsNotExistsError } from "./errors/AccountIsNotExistsError";
 import { InvalidEmailOrPasswordError } from "./errors/InvalidEmailOrPasswordError";
 
 type TokenResponse = {
@@ -32,7 +33,7 @@ export class AuthenticationUser {
     const user = await this.usersRepository.findByEmail(username);
 
     if (!user) {
-      return left(new InvalidPasswordLengthError());
+      return left(new AccountIsNotExistsError());
     }
 
     const isPasswordValid = await user.password.comparePassword(password);
