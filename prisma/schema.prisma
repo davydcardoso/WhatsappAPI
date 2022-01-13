@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Accounts {
-  id            String  @id @default(uuid())
-  actived       Boolean @default(false)
-  name          String  @db.VarChar(180)
-  email         String  @unique @db.VarChar(180)
+  id            String      @id @default(uuid())
+  actived       Boolean     @default(false)
+  name          String      @db.VarChar(180)
+  email         String      @unique @db.VarChar(180)
   password      String
-  document      String? @db.VarChar(20)
-  phone         String  @unique @db.VarChar(20)
-  webhook       String  @unique @db.VarChar(255)
-  webhook_token String? @unique @db.VarChar(155)
+  document      String?     @db.VarChar(20)
+  phone         String      @unique @db.VarChar(20)
+  webhook       String      @unique @db.VarChar(255)
+  webhook_token String?     @unique @db.VarChar(155)
+  ambient       TypeAmbient @default(DEVELOPMENT)
 
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
@@ -25,6 +26,12 @@ model Accounts {
   messages Messages[]
 
   @@map("accounts")
+}
+
+enum TypeAmbient {
+  SANDBOX
+  DEVELOPMENT
+  PRODUCTION
 }
 
 model Sessions {
