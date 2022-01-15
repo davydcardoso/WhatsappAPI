@@ -1,15 +1,14 @@
 import { Either, left, right } from "@core/logic/Either";
-import { Email } from "@modules/accounts/domain/email";
 import { InvalidEmailUserError } from "@modules/accounts/domain/errors/InvalidEmailUserError";
-import { InvalidPasswordLengthError } from "@modules/accounts/domain/errors/InvalidPasswordLengthError";
 import { JWT } from "@modules/accounts/domain/jwt";
-import { Password } from "@modules/accounts/domain/password";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
 import { AccountIsNotActivedError } from "./errors/AccountIsNotActivedError";
 import { AccountIsNotExistsError } from "./errors/AccountIsNotExistsError";
 import { InvalidEmailOrPasswordError } from "./errors/InvalidEmailOrPasswordError";
 
 type TokenResponse = {
+  name: string;
+  avatar?: string;
   token: string;
 };
 
@@ -48,6 +47,9 @@ export class AuthenticationUser {
 
     const { token } = JWT.signUser(user);
 
-    return right({ token });
+    return right({
+      name: user.name.value,
+      token,
+    });
   }
 }
