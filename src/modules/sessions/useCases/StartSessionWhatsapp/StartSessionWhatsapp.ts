@@ -2,10 +2,8 @@ import { adapterWhatsapp } from "@core/infra/adpters/WhatsappHandlerAdapter";
 import { Either, left, right } from "@core/logic/Either";
 import { makeStartSessionWhatsappHandler } from "@infra/whatsapp/factories/StartSessionWhatsappHandlerFactory";
 import { startWhatsappMonitor } from "@infra/whatsapp/monitor";
-import { Sessions } from "@modules/sessions/domain/sessions";
 import { SessionsRepository } from "@modules/sessions/repositories/SessionsRepository";
 import { Client, ClientSession } from "whatsapp-web.js";
-import { InvalidSessionWhatsappError } from "./errors/InvalidSessionWhatsappError";
 import { SessionAlreadyStartedError } from "./errors/SessionAlreadyStartedError";
 import SocketClient from "socket.io-client";
 

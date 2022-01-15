@@ -77,30 +77,30 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
               }
             );
 
-            await api
-              .post(`/${webhookToken}`, {
-                qrcode: qrcode,
-              })
-              .then(() => {
-                logger.info(
-                  `Qr code sent to webhook successfully | token: ${accountId}`
-                );
-              })
-              .catch((err) => {
-                const error = err as AxiosError;
-                logger.error(
-                  `Error generating QR code  | token: ${accountId} ${
-                    error.response
-                      ? `Error: ${JSON.stringify(error.response.data)}`
-                      : ` ${err}`
-                  }`
-                );
-              });
-
             io.emit("whatsapp.qrcode", {
               token: accountId,
               qrcode: qrcode,
             });
+
+            // await api
+            //   .post(`/${webhookToken}`, {
+            //     qrcode: qrcode,
+            //   })
+            //   .then(() => {
+            //     logger.info(
+            //       `Qr code sent to webhook successfully | token: ${accountId}`
+            //     );
+            //   })
+            //   .catch((err) => {
+            //     const error = err as AxiosError;
+            //     logger.error(
+            //       `Error generating QR code  | token: ${accountId} ${
+            //         error.response
+            //           ? `Error: ${JSON.stringify(error.response.data)}`
+            //           : ` ${err}`
+            //       }`
+            //     );
+            //   });
           });
 
           whatsapp.on("authenticated", (session) => {
