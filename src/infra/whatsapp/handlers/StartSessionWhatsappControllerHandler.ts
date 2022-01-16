@@ -52,9 +52,9 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             }
 
             if (loginAttempts >= 5) {
-              // fs.unlink(`./public/qrcode/${accountId}.png`, (err) => {
-              //   if (err) return;
-              // });
+              fs.unlink(`./public/qrcode/${accountId}.png`, (err) => {
+                if (err) return;
+              });
               reject(new Error("Maximum attempts reached"));
               return;
             }
