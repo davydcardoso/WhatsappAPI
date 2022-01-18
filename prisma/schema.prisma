@@ -7,6 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Companys {
+  id           String  @id @default(uuid())
+  token        String  @unique @default(uuid())
+  name         String  @db.VarChar(180)
+  document     String? @db.VarChar(20)
+  actived      Boolean @default(false)
+  max_sessions Int     @default(1)
+
+  // accounts Accounts[]
+
+  @@map("companys")
+}
+
 model Accounts {
   id            String      @id @default(uuid())
   actived       Boolean     @default(false)
@@ -19,12 +32,14 @@ model Accounts {
   webhook_token String?     @unique @db.VarChar(155)
   ambient       TypeAmbient @default(DEVELOPMENT)
   avatar        String?     @db.VarChar(255)
+  company_id    String
 
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
 
   sessions Sessions?
   messages Messages[]
+  // companys Companys?  @relation(fields: [company_id], references: [id])
 
   @@map("accounts")
 }
@@ -33,6 +48,12 @@ enum TypeAmbient {
   SANDBOX
   DEVELOPMENT
   PRODUCTION
+}
+
+model Plans {
+  id String @id @default(uuid())
+
+  @@map("plans")
 }
 
 model Sessions {
