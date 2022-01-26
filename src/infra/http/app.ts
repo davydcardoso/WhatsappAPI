@@ -30,7 +30,7 @@ app.use(
 
 app.use(Sentry.Handlers.requestHandler());
 app.use("/public", express.static(uploadConfig.directory));
-app.use("/api/v1", routes);
+app.use("/hiperion/v1", routes);
 
 app.use(Sentry.Handlers.errorHandler());
 
