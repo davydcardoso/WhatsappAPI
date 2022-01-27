@@ -3,16 +3,16 @@ import { Accounts as PersistenceUser } from "@prisma/client";
 import { Name } from "../domain/name";
 import { Email } from "../domain/email";
 import { Password } from "../domain/password";
-import { Phone } from "../domain/phone";
-import { Webhook } from "../domain/webhook";
+import { AccessLevel, accessLevelEnum } from "../domain/accessLevel";
+
+type AccessLevelProps = typeof accessLevelEnum[number];
 
 export class UsersMappers {
   static toDomain(raw: PersistenceUser): Users {
     const nameOrError = Name.create(raw.name);
     const emailOrError = Email.create(raw.email);
     const passwordOrError = Password.create(raw.password, true);
-    const phoneOrError = Phone.create(raw.phone);
-    const webhookOrError = Webhook.create(raw.webhook || "http://localhost");
+    const accessLevelOrError = AccessLevel.create(raw.access_level);
 
     if (nameOrError.isLeft()) {
       throw new Error("Name value is invalid.");
@@ -26,23 +26,17 @@ export class UsersMappers {
       throw new Error("Password value is invalid.");
     }
 
-    if (phoneOrError.isLeft()) {
-      throw new Error("Phone value is invalid");
+    if (accessLevelOrError.isLeft()) {
+      throw new Error("Access level value is invalid");
     }
-
-    if (webhookOrError.isLeft()) {
-      throw new Error("Webhook value is invalid");
-    }
-
     const userOrError = Users.create(
       {
         name: nameOrError.value,
         email: emailOrError.value,
         password: passwordOrError.value,
         actived: raw.actived,
-        phone: phoneOrError.value,
-        webhook: webhookOrError.value,
-        webhookToken: raw.webhook_token,
+        companyId: raw.company_id,
+        accessLevel: accessLevelOrError.value
       },
       raw.id
     );
@@ -61,10 +55,10 @@ export class UsersMappers {
       email: user.email.value,
       actived: user.status,
       password: await user.password.getHashedValue(),
-      phone: user.phone.value,
-      document: user.document.value,
-      webhook: user.webhook.value,
-      webhook_token: user.webhookToken,
+      access_level: user.accessLevel
+        ? user.accessLevel
+        : ('"ATTENDANTS"' as AccessLevelProps),
+      company_id: user.companyId
     };
   }
 }

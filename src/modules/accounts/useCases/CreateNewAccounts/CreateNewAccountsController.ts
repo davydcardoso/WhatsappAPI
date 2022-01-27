@@ -11,9 +11,6 @@ type CreateNewAccountsControllerRequest = {
   name: string;
   email: string;
   password: string;
-  phone: string;
-  document?: string;
-  webhook: string;
 };
 
 export class CreateNewAccountsController implements Controller {
@@ -23,27 +20,26 @@ export class CreateNewAccountsController implements Controller {
     request: CreateNewAccountsControllerRequest
   ): Promise<HttpResponse> {
     try {
-      const { name, email, password, phone, document, webhook } = request;
+      console.log(request);
 
-      const result = await this.createNewAccounts.perform({
-        name,
-        email,
-        password,
-        phone,
-        document,
-        webhook,
-      });
+      const { name, email, password } = request;
 
-      if (result.isLeft()) {
-        const error = result.value;
+      // const result = await this.createNewAccounts.perform({
+      //   name,
+      //   email,
+      //   password,
+      // });
 
-        switch (error.constructor) {
-          default:
-            return clientError(error);
-        }
-      }
+      // if (result.isLeft()) {
+      //   const error = result.value;
 
-      return created(result.value);
+      //   switch (error.constructor) {
+      //     default:
+      //       return clientError(error);
+      //   }
+      // }
+
+      return created("result.value");
     } catch (err) {
       return fail(err);
     }

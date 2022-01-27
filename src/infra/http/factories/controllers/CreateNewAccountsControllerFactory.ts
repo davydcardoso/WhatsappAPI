@@ -5,14 +5,9 @@ import { CreateNewAccounts } from "@modules/accounts/useCases/CreateNewAccounts/
 import { CreateNewAccountsController } from "@modules/accounts/useCases/CreateNewAccounts/CreateNewAccountsController";
 
 export function makeCreateNewAccountsController(): Controller {
-  const bullProvider = new BullProvider();
-
   const prismaUsersRepository = new PrismaUsersRepository();
 
-  const createNewAccounts = new CreateNewAccounts(
-    prismaUsersRepository,
-    bullProvider
-  );
+  const createNewAccounts = new CreateNewAccounts(prismaUsersRepository);
 
   const createNewAccountsController = new CreateNewAccountsController(
     createNewAccounts

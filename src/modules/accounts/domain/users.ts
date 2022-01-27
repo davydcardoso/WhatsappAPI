@@ -1,27 +1,23 @@
-import { Entity } from "@core/domain/Entity";
-import { Either, right } from "@core/logic/Either";
-import { Document } from "./document";
-import { Email } from "./email";
-import { InvalidDocumentUserError } from "./errors/InvalidDocumentUserError";
-import { InvalidEmailUserError } from "./errors/InvalidEmailUserError";
-import { InvalidNameUserError } from "./errors/InvalidNameUserError";
-import { InvalidPasswordLengthError } from "./errors/InvalidPasswordLengthError";
-import { InvalidPhoneNumberError } from "./errors/InvalidPhoneNumberError";
-import { InvalidWebhookAccountError } from "./errors/InvalidWebhookAccountError";
 import { Name } from "./name";
+import { Email } from "./email";
+import { Entity } from "@core/domain/Entity";
 import { Password } from "./password";
-import { Phone } from "./phone";
-import { Webhook } from "./webhook";
+import { AccessLevel } from "./accessLevel";
+import { Either, right } from "@core/logic/Either";
+import { InvalidNameUserError } from "./errors/InvalidNameUserError";
+import { InvalidEmailUserError } from "./errors/InvalidEmailUserError";
+import { InvalidPhoneNumberError } from "../../companys/domain/errors/InvalidPhoneNumberError";
+import { InvalidPasswordLengthError } from "./errors/InvalidPasswordLengthError";
+import { InvalidWebhookAccountError } from "../../companys/domain/errors/InvalidWebhookAccountError";
+import { InvalidAccessLevelValueError } from "./errors/InvalidAccessLevelValueError";
 
 interface UsersProps {
   name: Name;
+  companyId: string;
   actived: boolean;
+  accessLevel?: AccessLevel;
   email: Email;
   password: Password;
-  phone: Phone;
-  document?: Document;
-  webhook?: Webhook;
-  webhookToken?: string;
 }
 
 export class Users extends Entity<UsersProps> {
@@ -41,20 +37,12 @@ export class Users extends Entity<UsersProps> {
     return this.props.password;
   }
 
-  get phone() {
-    return this.props.phone;
+  get accessLevel() {
+    return this.props.accessLevel;
   }
 
-  get document() {
-    return this.props.document;
-  }
-
-  get webhook() {
-    return this.props.webhook;
-  }
-
-  get webhookToken() {
-    return this.props.webhookToken;
+  get companyId() {
+    return this.props.companyId;
   }
 
   private constructor(props: UsersProps, id?: string) {
@@ -69,8 +57,8 @@ export class Users extends Entity<UsersProps> {
     | InvalidEmailUserError
     | InvalidPasswordLengthError
     | InvalidPhoneNumberError
-    | InvalidDocumentUserError
-    | InvalidWebhookAccountError,
+    | InvalidWebhookAccountError
+    | InvalidAccessLevelValueError,
     Users
   > {
     const users = new Users(props, id);

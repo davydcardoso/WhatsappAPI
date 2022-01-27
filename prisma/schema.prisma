@@ -8,40 +8,45 @@ datasource db {
 }
 
 model Companys {
-  id           String  @id @default(uuid())
-  token        String  @unique @default(uuid())
-  name         String  @db.VarChar(180)
-  document     String? @db.VarChar(20)
-  actived      Boolean @default(false)
-  max_sessions Int     @default(1)
-
-  // accounts Accounts[]
+  id            String      @id @default(uuid())
+  token         String      @unique @default(uuid())
+  name          String      @db.VarChar(180)
+  fantasy_name  String      @db.VarChar(180)
+  email         String      @unique @db.VarChar(180)
+  phone         String      @db.VarChar(20)
+  document      String?     @unique @db.VarChar(20)
+  actived       Boolean     @default(false)
+  max_sessions  Int         @default(1)
+  webhook       String      @unique @db.VarChar(255)
+  webhook_token String?     @unique @db.VarChar(155)
+  ambient       TypeAmbient @default(DEVELOPMENT)
+  sessions      Sessions?
 
   @@map("companys")
 }
 
 model Accounts {
-  id            String      @id @default(uuid())
-  actived       Boolean     @default(false)
-  name          String      @db.VarChar(180)
-  email         String      @unique @db.VarChar(180)
-  password      String
-  document      String?     @db.VarChar(20)
-  phone         String      @unique @db.VarChar(20)
-  webhook       String      @unique @db.VarChar(255)
-  webhook_token String?     @unique @db.VarChar(155)
-  ambient       TypeAmbient @default(DEVELOPMENT)
-  avatar        String?     @db.VarChar(255)
-  company_id    String?
+  id           String      @id @default(uuid())
+  actived      Boolean     @default(false)
+  access_level AccessLevel
+  name         String      @db.VarChar(180)
+  email        String      @unique @db.VarChar(180)
+  password     String
+  avatar       String?     @db.VarChar(255)
+  company_id   String
 
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
 
-  sessions Sessions?
   messages Messages[]
-  // companys Companys?  @relation(fields: [company_id], references: [id])
 
   @@map("accounts")
+}
+
+enum AccessLevel {
+  DEVELOPER
+  ADMINISTRATOR
+  ATTENDANTS
 }
 
 enum TypeAmbient {
@@ -58,7 +63,7 @@ model Plans {
 
 model Sessions {
   id               String @id @default(uuid())
-  account_id       String @unique
+  companys_id      String @unique
   status           String @db.VarChar(80)
   wa_browser_id    String @db.Text
   wa_secret_bundle String @db.Text
@@ -68,7 +73,7 @@ model Sessions {
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
 
-  accounts Accounts @relation(fields: [account_id], references: [id])
+  companys Companys @relation(fields: [companys_id], references: [id])
 
   @@map("sessions")
 }
