@@ -30,13 +30,13 @@ app.use(
 
 app.use(Sentry.Handlers.requestHandler());
 app.use("/public", express.static(uploadConfig.directory));
-app.use(
+app.get(
   "/hiperion/v1/test",
   (request: Request, response: Response, next: NextFunction) => {
     response.send({
       message: "Hiperion whatsapp API working normally",
       developer: "Davyd Kewen",
-      contact:"55 62 9173-0714",
+      contact: "55 62 9173-0714",
       github: "https://github.com/Rocket-Zapi",
       version: "1.0.0.0"
     });
