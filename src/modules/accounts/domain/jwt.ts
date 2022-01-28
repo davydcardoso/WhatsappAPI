@@ -60,10 +60,18 @@ export class JWT {
   }
 
   static signUser(user: Users): JWT {
-    const token = sign({}, auth.secret, {
-      subject: user.id,
-      expiresIn: auth.expiresIn,
-    });
+    const token = sign(
+      {
+        companyId: user.companyId,
+        isAdministrator: user.isAdministrator,
+        isAdmin: user.isAdministrator,
+      },
+      auth.secret,
+      {
+        subject: user.id,
+        expiresIn: auth.expiresIn
+      }
+    );
 
     const jwt = new JWT({ userId: user.id, token });
 

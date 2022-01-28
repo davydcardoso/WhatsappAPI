@@ -15,6 +15,7 @@ import { InvalidPhoneNumberError } from "./errors/InvalidPhoneNumberError";
 
 type CompanysProps = {
   id?: string;
+  actived: boolean;
   name: Name;
   fantasyName: FantasyName;
   document: Document;
@@ -50,6 +51,10 @@ export class Companys extends Entity<CompanysProps> {
 
   get webhook() {
     return this.props.webhook;
+  }
+
+  get actived() {
+    return this.props.actived;
   }
 
   private constructor(props: CompanysProps, id?: string) {

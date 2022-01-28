@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(
   express.json({
     type: ["application/json", "text/plain"],
-    limit: "100mb",
+    limit: "10mb"
   })
 );
 

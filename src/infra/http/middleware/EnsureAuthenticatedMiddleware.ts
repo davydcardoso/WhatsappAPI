@@ -4,7 +4,7 @@ import {
   fail,
   forbidden,
   ok,
-  clientError,
+  clientError
 } from "../../../core/infra/HttpResponse";
 import { Middleware } from "../../../core/infra/Middleware";
 import { AccessDeniedError } from "./errors/AccessDeniedError";
@@ -19,7 +19,7 @@ type EnsureAuthenticatedMiddlewareRequest = {
 type TokenPayload = {
   companyId: string;
   username: string;
-  isAdmin: string;
+  isAdmin: boolean;
   iat: number;
   exp: number;
   sub: string;
@@ -27,7 +27,7 @@ type TokenPayload = {
 
 export class EnsureAuthenticatedMiddleware implements Middleware {
   async handle({
-    accessToken,
+    accessToken
   }: EnsureAuthenticatedMiddlewareRequest): Promise<HttpResponse> {
     try {
       if (accessToken) {
@@ -35,11 +35,12 @@ export class EnsureAuthenticatedMiddleware implements Middleware {
 
         try {
           const tokenDecoded = verify(token, authConfig.secret);
-          const { isAdmin, sub } = tokenDecoded as TokenPayload;
+          const { isAdmin, sub, companyId } = tokenDecoded as TokenPayload;
 
           return ok({
             userId: sub,
             isAdmin: isAdmin,
+            companyId: companyId
           });
         } catch (err) {
           return forbidden(err);

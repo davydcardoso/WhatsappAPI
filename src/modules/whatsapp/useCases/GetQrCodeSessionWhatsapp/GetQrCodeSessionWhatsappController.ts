@@ -4,7 +4,7 @@ import { QrCodeImageNotFoundError } from "./errors/QrCodeImageNotFoundError";
 import { GetQrCodeSessionWhatsapp } from "./GetQrCodeSessionWhatsapp";
 
 type GetQrCodeSessionWhatsappControllerRequest = {
-  userId: string;
+  companyId: string;
 };
 
 export class GetQrCodeSessionWhatsappController implements Controller {
@@ -14,10 +14,10 @@ export class GetQrCodeSessionWhatsappController implements Controller {
     request: GetQrCodeSessionWhatsappControllerRequest
   ): Promise<HttpResponse> {
     try {
-      const { userId } = request;
+      const { companyId } = request;
 
       const result = await this.getQrCodeSessionWhatsapp.perform({
-        userId,
+        companyId,
       });
 
       if (result.isLeft()) {

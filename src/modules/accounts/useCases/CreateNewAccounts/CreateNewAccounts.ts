@@ -16,7 +16,7 @@ type CreateNewAccountsRequest = {
   email: string;
   password: string;
   companyId?: string;
-  accessLevel?: string;
+  isAdministrator: boolean;
 };
 
 type CreateNewAccountsResponse = Either<
@@ -34,14 +34,11 @@ export class CreateNewAccounts {
     email,
     password,
     companyId,
-    accessLevel
+    isAdministrator
   }: CreateNewAccountsRequest): Promise<CreateNewAccountsResponse> {
     const nameOrError = Name.create(name);
     const emailOrError = Email.create(email);
     const passwordOrError = Password.create(password);
-    const accessLevelOrError = AccessLevel.create(
-      accessLevel == "ADM" ? "ADMINISTRATOR" : "ATTENDANTS"
-    );
 
     if (nameOrError.isLeft()) {
       return left(new InvalidNameUserError(name));
@@ -55,16 +52,12 @@ export class CreateNewAccounts {
       return left(new InvalidPasswordLengthError());
     }
 
-    if (accessLevelOrError.isLeft()) {
-      return left(new InvalidAccessLevelValueError(accessLevel));
-    }
-
     const userOrError = Users.create({
       name: nameOrError.value,
       email: emailOrError.value,
       password: passwordOrError.value,
       actived: false,
-      accessLevel: accessLevelOrError.value,
+      isAdministrator: isAdministrator,
       companyId: companyId
     });
 

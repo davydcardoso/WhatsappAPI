@@ -3,7 +3,7 @@ import { Either, right } from "@core/logic/Either";
 import { QrCodeImageNotFoundError } from "./errors/QrCodeImageNotFoundError";
 
 type GetQrCodeSessionWhatsappRequest = {
-  userId: string;
+  companyId: string;
 };
 
 type GetQrCodeSessionWhatsappResponse = Either<Error, ResponseData>;
@@ -14,9 +14,9 @@ type ResponseData = {
 
 export class GetQrCodeSessionWhatsapp {
   async perform({
-    userId,
+    companyId
   }: GetQrCodeSessionWhatsappRequest): Promise<GetQrCodeSessionWhatsappResponse> {
-    const fileName = `./public/qrcode/${userId}.png`;
+    const fileName = `./public/qrcode/${companyId}.png`;
 
     const qrcode = await new Promise<string>((resolve, reject) => {
       fs.readFile(fileName, "base64", (err, data) => {

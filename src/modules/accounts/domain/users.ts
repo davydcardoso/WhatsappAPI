@@ -15,7 +15,7 @@ interface UsersProps {
   name: Name;
   companyId: string;
   actived: boolean;
-  accessLevel?: AccessLevel;
+  isAdministrator: boolean;
   email: Email;
   password: Password;
 }
@@ -37,8 +37,8 @@ export class Users extends Entity<UsersProps> {
     return this.props.password;
   }
 
-  get accessLevel() {
-    return this.props.accessLevel;
+  get isAdministrator() {
+    return this.props.isAdministrator;
   }
 
   get companyId() {
@@ -57,8 +57,7 @@ export class Users extends Entity<UsersProps> {
     | InvalidEmailUserError
     | InvalidPasswordLengthError
     | InvalidPhoneNumberError
-    | InvalidWebhookAccountError
-    | InvalidAccessLevelValueError,
+    | InvalidWebhookAccountError,
     Users
   > {
     const users = new Users(props, id);

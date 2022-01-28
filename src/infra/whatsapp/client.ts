@@ -11,7 +11,7 @@ import { makeStartSessionWhatsappHandler } from "./factories/StartSessionWhatsap
 import {
   Client,
   ClientSession as ClientSessionDto,
-  MessageMedia,
+  MessageMedia
 } from "whatsapp-web.js";
 import { v4 } from "uuid";
 
@@ -62,8 +62,8 @@ type GenerateQrCodeData = {
 
 let socketIo = new SocketServer(httpServer, {
   cors: {
-    origin: "*",
-  },
+    origin: "*"
+  }
 });
 
 async function main() {
@@ -71,20 +71,20 @@ async function main() {
 
   const sessions = await prismaSessionsRepository.findMany();
 
-  sessions.map(async (session) => {
+  sessions.map(async session => {
     if (session.status === "STARTED") {
       const sessionAlreadyStarted: SessionAlreadyStartedData = {
         WABrowserId: session.waBrowserId,
         WASecretBundle: session.waSecretBundle,
         WAToken1: session.waToken1,
-        WAToken2: session.waToken2,
+        WAToken2: session.waToken2
       };
 
       const clientStarted: ClientSession = new Client({
         session: sessionAlreadyStarted,
         puppeteer: {
-          executablePath: process.env.CHROME_BIN || undefined,
-        },
+          executablePath: process.env.CHROME_BIN || undefined
+        }
       });
 
       clientStarted.initialize();
@@ -100,38 +100,38 @@ async function main() {
   });
 }
 
-socketIo.on("connection", (socket) => {
+socketIo.on("connection", socket => {
   logger.info(`Client successfully connected to socket | id: ${socket.id}`);
 
   socket.on("whatsapp.qrcode", (data: GenerateQrCodeData) => {
     logger.info(`QR Code successfully generated | token ${data.token}`);
   });
 
-  socket.on("whatsapp.authenticated", (token) => {
+  socket.on("whatsapp.authenticated", token => {
     logger.info(`Whatsapp successfully authenticated | token ${token}`);
   });
 
-  socket.on("whatsapp.auth_failure", (token) => {
+  socket.on("whatsapp.auth_failure", token => {
     logger.error(`Error logging into whatsapp | token ${token}`);
   });
 
-  socket.on("whatsapp.ready", (token) => {
+  socket.on("whatsapp.ready", token => {
     logger.info(`Whatsapp started successfully | token ${token}`);
   });
 
-  socket.on("whatsapp.change_state", (token) => {
+  socket.on("whatsapp.change_state", token => {
     logger.info(`Monitor session:  ${token}`);
   });
 
-  socket.on("whatsapp.disconnected", (token) => {
+  socket.on("whatsapp.disconnected", token => {
     logger.error(`Disconnected session: ${token}`);
   });
 
-  socket.on("close", (socket) => {
+  socket.on("close", socket => {
     logger.warn(`Client disconnected from socket successfully`);
   });
 
-  socket.on("whatsapp.start-session", async (token) => {
+  socket.on("whatsapp.start-session", async token => {
     try {
       const startSessionWhatsapp = adapterWhatsapp(
         makeStartSessionWhatsappHandler()
@@ -154,11 +154,11 @@ socketIo.on("connection", (socket) => {
 
       const sessionOrError = Sessions.create({
         status: "STARTED",
-        accountId: token,
+        companyId: token,
         wa_browser_id: WABrowserId,
         wa_secret_bundle: WASecretBundle,
         wa_token1: WAToken1,
-        wa_token2: WAToken2,
+        wa_token2: WAToken2
       });
 
       if (sessionOrError.isLeft()) {
@@ -177,9 +177,7 @@ socketIo.on("connection", (socket) => {
     "whatsapp.send-message-media",
     async (data: SendMessageMediaWebsocketData) => {
       try {
-        const sessionIndex = sessionsWts.findIndex(
-          (s) => (s.token = data.token)
-        );
+        const sessionIndex = sessionsWts.findIndex(s => (s.token = data.token));
 
         const { to, contents } = data.message;
 
@@ -190,7 +188,7 @@ socketIo.on("connection", (socket) => {
             `./public/${fileNameUUID}.${contents.media_type}`,
             contents.media,
             "base64",
-            async (err) => {
+            async err => {
               if (err) {
                 logger.error(`Error in send file | token: ${data.token}`);
                 reject(err);
@@ -202,9 +200,9 @@ socketIo.on("connection", (socket) => {
 
               await sessionsWts[sessionIndex]
                 .sendMessage(`${to}@c.us`, newMediaFile, {
-                  sendAudioAsVoice: true,
+                  sendAudioAsVoice: true
                 })
-                .catch((err) => {
+                .catch(err => {
                   logger.error(
                     `Error in send message file | Error: ${err.message}`
                   );
@@ -224,12 +222,12 @@ socketIo.on("connection", (socket) => {
 
   socket.on("whatsapp.send-message", async (data: SendMessageWebsocketData) => {
     try {
-      const sessionIndex = sessionsWts.findIndex((s) => (s.token = data.token));
+      const sessionIndex = sessionsWts.findIndex(s => (s.token = data.token));
 
       const { to, message } = data.message;
 
       await sessionsWts[sessionIndex].sendMessage(`${to}@c.us`, message, {
-        linkPreview: false,
+        linkPreview: false
       });
     } catch (err) {
       logger.error(`Error sending message | Erro: ${err.message}`);

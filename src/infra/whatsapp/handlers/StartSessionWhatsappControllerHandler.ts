@@ -7,7 +7,7 @@ import axios, { AxiosError } from "axios";
 import { Client, ClientSession } from "whatsapp-web.js";
 import { generate as QrCodeGenerate } from "qrcode-terminal";
 import { WhatsappHandler } from "@core/infra/WhatsappHandler";
-import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
+import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
 
 type StartSessionWhatsappHandlerResponse = {
   session: Client;
@@ -16,10 +16,13 @@ type StartSessionWhatsappHandlerResponse = {
 };
 
 export class StartSessionWhatsappHandler implements WhatsappHandler {
-  constructor(private redis: Redis, private usersRepository: UsersRepository) {}
+  constructor(
+    private redis: Redis,
+    private companysRepository: CompanysRepository
+  ) {}
 
   async perform(
-    accountId: string
+    companyId: string
   ): Promise<StartSessionWhatsappHandlerResponse> {
     return new Promise<StartSessionWhatsappHandlerResponse>(
       async (resolve, reject) => {
@@ -28,12 +31,10 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
           let loginAttempts: number = 0;
 
-          const { webhook, webhookToken } = await this.usersRepository.findById(
-            accountId
-          );
+          const { webhook } = await this.companysRepository.findById(companyId);
 
           const api = axios.create({
-            baseURL: webhook.value,
+            baseURL: webhook.value
           });
 
           let sessionWhatsapp: ClientSession;
@@ -46,13 +47,13 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
           io.connect();
 
-          whatsapp.on("qr", async (qrcode) => {
+          whatsapp.on("qr", async qrcode => {
             if (process.env.LOG_QRCODE == "true") {
               QrCodeGenerate(qrcode, { small: true });
             }
 
             if (loginAttempts >= 5) {
-              fs.unlink(`./public/qrcode/${accountId}.png`, (err) => {
+              fs.unlink(`./public/qrcode/${companyId}.png`, err => {
                 if (err) return;
               });
               reject(new Error("Maximum attempts reached"));
@@ -62,14 +63,14 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             loginAttempts++;
 
             QrCode.toFile(
-              `./public/qrcode/${accountId}.png`,
+              `./public/qrcode/${companyId}.png`,
               qrcode,
               {
                 color: {
-                  light: "#FFF",
-                },
+                  light: "#FFF"
+                }
               },
-              (err) => {
+              err => {
                 if (err) {
                   reject(new Error(err.message));
                   return;
@@ -78,8 +79,8 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             );
 
             io.emit("whatsapp.qrcode", {
-              token: accountId,
-              qrcode: qrcode,
+              token: companyId,
+              qrcode: qrcode
             });
 
             // await api
@@ -88,13 +89,13 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             //   })
             //   .then(() => {
             //     logger.info(
-            //       `Qr code sent to webhook successfully | token: ${accountId}`
+            //       `Qr code sent to webhook successfully | token: ${companyId}`
             //     );
             //   })
             //   .catch((err) => {
             //     const error = err as AxiosError;
             //     logger.error(
-            //       `Error generating QR code  | token: ${accountId} ${
+            //       `Error generating QR code  | token: ${companyId} ${
             //         error.response
             //           ? `Error: ${JSON.stringify(error.response.data)}`
             //           : ` ${err}`
@@ -103,28 +104,28 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             //   });
           });
 
-          whatsapp.on("authenticated", (session) => {
+          whatsapp.on("authenticated", session => {
             sessionWhatsapp = session;
             logger.info(
-              `Whatsapp successfully authenticated | token ${accountId}`
+              `Whatsapp successfully authenticated | token ${companyId}`
             );
-            io.emit("whatsapp.authenticated", accountId);
+            io.emit("whatsapp.authenticated", companyId);
           });
 
-          whatsapp.on("auth_failure", (message) => {
-            logger.error(`Error logging into whatsapp | token ${accountId}`);
-            io.emit("whatsapp.auth_failure", accountId);
-            reject(`Error logging into whatsapp | token ${accountId}`);
+          whatsapp.on("auth_failure", message => {
+            logger.error(`Error logging into whatsapp | token ${companyId}`);
+            io.emit("whatsapp.auth_failure", companyId);
+            reject(`Error logging into whatsapp | token ${companyId}`);
           });
 
           whatsapp.on("ready", async () => {
-            io.emit("whatsapp.ready", accountId);
+            io.emit("whatsapp.ready", companyId);
 
-            logger.info(`Whatsapp started successfully | token ${accountId}`);
+            logger.info(`Whatsapp started successfully | token ${companyId}`);
             resolve({
               session: whatsapp,
               sessionData: sessionWhatsapp,
-              tokenAccount: accountId,
+              tokenAccount: companyId
             });
           });
         } catch (err) {

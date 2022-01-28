@@ -3,7 +3,7 @@ import { clientError, fail, HttpResponse, ok } from "@core/infra/HttpResponse";
 import { SendWhatsappMediaMessage } from "./SendWhatsappMediaMessage";
 
 type SendWhatsappMediaMessageControllerRequest = {
-  userId: string;
+  companyId: string;
   to: string;
   contents: {
     media_type: string;
@@ -18,10 +18,10 @@ export class SendWhatsappMediaMessageController implements Controller {
     request: SendWhatsappMediaMessageControllerRequest
   ): Promise<HttpResponse> {
     try {
-      const { userId, to, contents } = request;
+      const { companyId, to, contents } = request;
 
       const result = await this.sendWhatsappMediaMessage.perform({
-        userId,
+        companyId,
         to,
         contents,
       });

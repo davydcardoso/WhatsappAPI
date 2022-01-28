@@ -12,7 +12,6 @@ export class UsersMappers {
     const nameOrError = Name.create(raw.name);
     const emailOrError = Email.create(raw.email);
     const passwordOrError = Password.create(raw.password, true);
-    const accessLevelOrError = AccessLevel.create(raw.access_level);
 
     if (nameOrError.isLeft()) {
       throw new Error("Name value is invalid.");
@@ -26,9 +25,6 @@ export class UsersMappers {
       throw new Error("Password value is invalid.");
     }
 
-    if (accessLevelOrError.isLeft()) {
-      throw new Error("Access level value is invalid");
-    }
     const userOrError = Users.create(
       {
         name: nameOrError.value,
@@ -36,7 +32,7 @@ export class UsersMappers {
         password: passwordOrError.value,
         actived: raw.actived,
         companyId: raw.company_id,
-        accessLevel: accessLevelOrError.value
+        isAdministrator: raw.is_administrator
       },
       raw.id
     );
@@ -55,9 +51,7 @@ export class UsersMappers {
       email: user.email.value,
       actived: user.status,
       password: await user.password.getHashedValue(),
-      access_level: user.accessLevel
-        ? user.accessLevel
-        : ('"ATTENDANTS"' as AccessLevelProps),
+      is_administrator: user.isAdministrator,
       company_id: user.companyId
     };
   }

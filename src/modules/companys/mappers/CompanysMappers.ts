@@ -42,6 +42,7 @@ export class CompanysMappers {
     }
 
     const companysOrError = Companys.create({
+      actived: raw.actived,
       name: nameOrError.value,
       fantasyName: fantasyNameOrError.value,
       document: documentOrError.value,

@@ -1,13 +1,13 @@
 import { WhatsappMessageListener } from "@core/infra/WhatsappListener";
-import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
+import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
 import { logger } from "@util/logger";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { Message, Client } from "whatsapp-web.js";
 
 type WebhookResponseHeaders = {
   token: string;
-  message_id: string
-}
+  message_id: string;
+};
 
 type WebhookResponseData = {
   from: string;
@@ -30,20 +30,19 @@ type WebhookResponseData = {
 };
 
 export class StartMessageWhatsappListener implements WhatsappMessageListener {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(private companysRepository: CompanysRepository) {}
 
-  async perform(
-    token: string,
-    message: Message,
-    whatsapp: Client
-  ): Promise<void> {
+  async perform(token: string, message: Message): Promise<void> {
     if (message.fromMe) {
       return;
     }
 
-    const { webhook, webhookToken } = await this.usersRepository.findById(
-      token
-    );
+    const { webhook } = await this.companysRepository.findById(token);
+
+    if (!webhook) {
+      logger.warn(`Client does not have a registered webhook | token ${token}`);
+      return;
+    }
 
     if (webhook.value === "http://localhost") {
       logger.warn(`Client does not have a registered webhook | token ${token}`);
@@ -57,18 +56,18 @@ export class StartMessageWhatsappListener implements WhatsappMessageListener {
       baseURL: webhook.value,
       headers: {
         token: token,
-        message_id: message.id.id,
-      },
+        message_id: message.id.id
+      }
     });
 
     api
-      .post(`/${webhookToken}`, {
+      .post(`/webhook/hiperion`, {
         from: message.from,
         data: {
           contact: {
             id: JSON.stringify(contact.id),
             name: contact.name ? contact.name : "",
-            pushname: contact.pushname ? contact.pushname : "",
+            pushname: contact.pushname ? contact.pushname : ""
           },
           message: {
             is_media: message.hasMedia,
@@ -77,13 +76,13 @@ export class StartMessageWhatsappListener implements WhatsappMessageListener {
               ? {
                   media_url: media.filename ? media.filename : "",
                   media_type: media.mimetype ? media.mimetype : "",
-                  data: media.data ? JSON.stringify(media.data) : "",
+                  data: media.data ? JSON.stringify(media.data) : ""
                 }
-              : null,
-          },
-        },
+              : null
+          }
+        }
       })
-      .then((response) => {
+      .then(response => {
         if (response.status == 200) {
         }
       })

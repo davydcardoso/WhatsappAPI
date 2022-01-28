@@ -5,11 +5,11 @@ export class SessionsMapper {
   static toDomain(raw: PersistenceSessions): Sessions {
     const sessionsOrError = Sessions.create({
       status: raw.status,
-      accountId: raw.account_id,
+      companyId: raw.companys_id,
       wa_browser_id: raw.wa_browser_id,
       wa_secret_bundle: raw.wa_secret_bundle,
       wa_token1: raw.wa_token1,
-      wa_token2: raw.wa_token2,
+      wa_token2: raw.wa_token2
     });
 
     if (sessionsOrError.isRight()) {
@@ -22,11 +22,12 @@ export class SessionsMapper {
   static toPersistence(raw: Sessions) {
     return {
       account_id: raw.accountId,
+      companys_id: raw.accountId,
       status: raw.status,
       wa_browser_id: raw.waBrowserId,
       wa_secret_bundle: raw.waSecretBundle,
       wa_token1: raw.waToken1,
-      wa_token2: raw.waToken2,
+      wa_token2: raw.waToken2
     };
   }
 }

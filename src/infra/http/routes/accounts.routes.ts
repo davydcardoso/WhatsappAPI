@@ -8,6 +8,6 @@ const accountsRoutes = Router();
 
 accountsRoutes.use(adaptMiddleware(makeEnsureAuthenticatedMiddleware()));
 
-// accountsRoutes.post("/", adaptRoute(makeCreateNewAccountsController()));
+accountsRoutes.post("/", adaptRoute(makeCreateNewAccountsController()));
 
 export { accountsRoutes };

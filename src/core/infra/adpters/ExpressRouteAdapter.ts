@@ -11,6 +11,7 @@ export const adaptRoute = (controller: Controller) => {
       ...request.headers,
       userId: request.userId,
       userAdmin: request.isAdmin,
+      companyId: request.companyId
     };
 
     const httpResponse = await controller.handle(requestData);
@@ -19,7 +20,7 @@ export const adaptRoute = (controller: Controller) => {
       return response.status(httpResponse.statusCode).json(httpResponse.body);
     } else {
       return response.status(httpResponse.statusCode).json({
-        error: httpResponse.body.error,
+        error: httpResponse.body.error
       });
     }
   };

@@ -3,7 +3,7 @@ import { clientError, fail, HttpResponse, ok } from "@core/infra/HttpResponse";
 import { SendWhatsappMessage } from "./SendWhatsappMessage";
 
 type SendWhatsappMessageControllerRequest = {
-  userId: string;
+  companyId: string;
   to: string;
   message: string;
 };
@@ -15,10 +15,10 @@ export class SendWhatsappMessageController implements Controller {
     request: SendWhatsappMessageControllerRequest
   ): Promise<HttpResponse> {
     try {
-      const { userId, to, message } = request;
+      const { companyId, to, message } = request;
 
       const result = await this.sendWhatsappMessage.perform({
-        userId,
+        companyId,
         to,
         message,
       });

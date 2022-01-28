@@ -3,7 +3,7 @@ import { Either, right } from "@core/logic/Either";
 
 interface SessionsProps {
   status: string;
-  accountId: string;
+  companyId: string;
   wa_browser_id: string;
   wa_secret_bundle: string;
   wa_token1: string;
@@ -16,7 +16,7 @@ export class Sessions extends Entity<SessionsProps> {
   }
 
   get accountId() {
-    return this.props.accountId;
+    return this.props.companyId;
   }
 
   get waBrowserId() {

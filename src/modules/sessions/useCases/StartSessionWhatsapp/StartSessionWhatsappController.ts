@@ -3,7 +3,7 @@ import { clientError, fail, HttpResponse, ok } from "@core/infra/HttpResponse";
 import { StartSessionWhatsapp } from "./StartSessionWhatsapp";
 
 type StartSessionWhatsappControllerRequest = {
-  userId: string;
+  companyId: string;
 };
 
 export class StartSessionWhatsappController implements Controller {
@@ -13,10 +13,10 @@ export class StartSessionWhatsappController implements Controller {
     request: StartSessionWhatsappControllerRequest
   ): Promise<HttpResponse> {
     try {
-      const { userId } = request;
+      const { companyId } = request;
 
       const result = await this.startSessionWhatsapp.perform({
-        userId,
+        companyId,
       });
 
       if (result.isLeft()) {

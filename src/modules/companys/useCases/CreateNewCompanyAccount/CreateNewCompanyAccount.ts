@@ -112,7 +112,7 @@ export class CreateNewCompanyAccount {
       name: companys.name.value,
       password: password.toString(),
       companyId: companys.id,
-      accessLevel: "ADM"
+      isAdministrator: true
     });
 
     if (userCreated.isLeft()) {

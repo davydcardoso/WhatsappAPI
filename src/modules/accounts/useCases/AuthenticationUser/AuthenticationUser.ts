@@ -2,8 +2,10 @@ import { Either, left, right } from "@core/logic/Either";
 import { InvalidEmailUserError } from "@modules/accounts/domain/errors/InvalidEmailUserError";
 import { JWT } from "@modules/accounts/domain/jwt";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
+import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
 import { AccountIsNotActivedError } from "./errors/AccountIsNotActivedError";
 import { AccountIsNotExistsError } from "./errors/AccountIsNotExistsError";
+import { InvalidCompanysIsNotActivedError } from "./errors/InvalidCompanysIsNotActivedError";
 import { InvalidEmailOrPasswordError } from "./errors/InvalidEmailOrPasswordError";
 
 type TokenResponse = {
@@ -23,13 +25,22 @@ type AuthenticationUserResponse = Either<
 >;
 
 export class AuthenticationUser {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    private usersRepository: UsersRepository,
+    private companysRepository: CompanysRepository
+  ) {}
 
   async perform({
     username,
-    password,
+    password
   }: AuthenticationUserRequest): Promise<AuthenticationUserResponse> {
     const user = await this.usersRepository.findByEmail(username);
+
+    const { actived } = await this.companysRepository.findById(user.companyId);
+
+    if (!actived) {
+      return left(new InvalidCompanysIsNotActivedError  ());
+    }
 
     if (!user) {
       return left(new AccountIsNotExistsError());
@@ -49,7 +60,7 @@ export class AuthenticationUser {
 
     return right({
       name: user.name.value,
-      token,
+      token
     });
   }
 }

@@ -1,10 +1,11 @@
 import { Either, left, right } from "@core/logic/Either";
 import { UsersRepository } from "@modules/accounts/repositories/UsersRepository";
 import { AccountIsNotActivedError } from "@modules/accounts/useCases/AuthenticationUser/errors/AccountIsNotActivedError";
+import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
 import SocketClient from "socket.io-client";
 
 type SendWhatsappMediaMessageRequest = {
-  userId: string;
+  companyId: string;
   to: string;
   contents: {
     media_type: string;
@@ -29,16 +30,16 @@ type SendWhatsappMediaMessageResponse = Either<
 >;
 
 export class SendWhatsappMediaMessage {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(private companysRepository: CompanysRepository) {}
 
   async perform({
-    userId,
+    companyId,
     to,
-    contents,
+    contents
   }: SendWhatsappMediaMessageRequest): Promise<SendWhatsappMediaMessageResponse> {
-    const { status } = await this.usersRepository.findById(userId);
+    const { actived } = await this.companysRepository.findById(companyId);
 
-    if (!status) {
+    if (!actived) {
       return left(new AccountIsNotActivedError());
     }
 
@@ -49,11 +50,11 @@ export class SendWhatsappMediaMessage {
     io.connect();
 
     io.emit("whatsapp.send-message-media", {
-      token: userId,
+      token: companyId,
       message: {
         to,
-        contents,
-      },
+        contents
+      }
     } as SendMessageMediaWebsocketData);
 
     return right({});

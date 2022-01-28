@@ -26,14 +26,14 @@ model Companys {
 }
 
 model Accounts {
-  id           String      @id @default(uuid())
-  actived      Boolean     @default(false)
-  access_level AccessLevel
-  name         String      @db.VarChar(180)
-  email        String      @unique @db.VarChar(180)
-  password     String
-  avatar       String?     @db.VarChar(255)
-  company_id   String
+  id               String  @id @default(uuid())
+  actived          Boolean @default(false)
+  is_administrator Boolean @default(false)
+  name             String  @db.VarChar(180)
+  email            String  @unique @db.VarChar(180)
+  password         String
+  avatar           String? @db.VarChar(255)
+  company_id       String
 
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
@@ -41,12 +41,6 @@ model Accounts {
   messages Messages[]
 
   @@map("accounts")
-}
-
-enum AccessLevel {
-  DEVELOPER
-  ADMINISTRATOR
-  ATTENDANTS
 }
 
 enum TypeAmbient {

@@ -10,13 +10,13 @@ export class PrismaSessionsRepository implements SessionsRepository {
     await prisma.sessions.create({ data });
   }
 
-  async updateStatus(account_id: string, status: string): Promise<void> {
-    await prisma.sessions.update({ where: { account_id }, data: { status } });
+  async updateStatus(companys_id: string, status: string): Promise<void> {
+    await prisma.sessions.update({ where: { companys_id }, data: { status } });
   }
 
-  async findByAccountId(account_id: string): Promise<Sessions> {
+  async findByCompanyId(companys_id: string): Promise<Sessions> {
     const sessions = await prisma.sessions.findUnique({
-      where: { account_id },
+      where: { companys_id }
     });
 
     if (!sessions) {
@@ -29,6 +29,6 @@ export class PrismaSessionsRepository implements SessionsRepository {
   async findMany(): Promise<Sessions[]> {
     const sessions = await prisma.sessions.findMany({});
 
-    return sessions.map((session) => SessionsMapper.toDomain(session));
+    return sessions.map(session => SessionsMapper.toDomain(session));
   }
 }

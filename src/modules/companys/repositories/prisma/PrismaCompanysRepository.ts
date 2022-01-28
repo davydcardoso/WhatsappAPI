@@ -18,4 +18,10 @@ export class PrismaCompanysRepository implements CompanysRepository {
 
     await prisma.companys.create({ data });
   }
+
+  async findById(id: string): Promise<Companys> {
+    const company = await prisma.companys.findUnique({ where: { id } });
+
+    return CompanysMappers.toDomain(company);
+  }
 }
