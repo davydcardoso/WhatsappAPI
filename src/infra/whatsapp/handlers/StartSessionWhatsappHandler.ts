@@ -9,6 +9,8 @@ import { generate as QrCodeGenerate } from "qrcode-terminal";
 import { WhatsappHandler } from "@core/infra/WhatsappHandler";
 import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
 import { QrCodeImageNotFoundError } from "@modules/whatsapp/useCases/GetQrCodeSessionWhatsapp/errors/QrCodeImageNotFoundError";
+import { rootPath } from "@util/rootPath";
+import { publicFolder } from "@config/upload";
 
 type StartSessionWhatsappHandlerResponse = {
   session: Client;
@@ -54,11 +56,14 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             }
 
             if (loginAttempts >= 5) {
-              fs.unlink(`./public/qrcode/${companyId}.png`, async err => {
-                if (err) return;
+              fs.unlink(
+                `${publicFolder}/qrcode/${companyId}.png`,
+                async err => {
+                  if (err) return;
 
-                await this.redis.del(`@hiperion.qrcode-${companyId}`);
-              });
+                  await this.redis.del(`@hiperion.qrcode-${companyId}`);
+                }
+              );
               reject(new Error("Maximum attempts reached"));
               return;
             }
@@ -67,7 +72,7 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
             await new Promise<void>((resolve, reject) => {
               QrCode.toFile(
-                `./public/qrcode/${companyId}.png`,
+                `${publicFolder}/qrcode/${companyId}.png`,
                 qrcode,
                 {
                   color: {
@@ -86,7 +91,7 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
             await new Promise<void>((resolve, reject) => {
               fs.readFile(
-                `./public/qrcode/${companyId}.png`,
+                `${publicFolder}/qrcode/${companyId}.png`,
                 "base64",
                 async (err, data) => {
                   if (err) {

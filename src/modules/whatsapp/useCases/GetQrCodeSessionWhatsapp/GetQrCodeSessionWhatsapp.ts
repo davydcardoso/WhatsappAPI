@@ -2,6 +2,7 @@ import fs from "fs";
 import { Either, left, right } from "@core/logic/Either";
 import { QrCodeImageNotFoundError } from "./errors/QrCodeImageNotFoundError";
 import { Redis } from "ioredis";
+import { publicFolder } from "@config/upload";
 
 type GetQrCodeSessionWhatsappRequest = {
   companyId: string;
@@ -19,7 +20,7 @@ export class GetQrCodeSessionWhatsapp {
   async perform({
     companyId
   }: GetQrCodeSessionWhatsappRequest): Promise<GetQrCodeSessionWhatsappResponse> {
-    const fileName = `./public/qrcode/${companyId}.png`;
+    const fileName = `${publicFolder}/qrcode/${companyId}.png`;
 
     const qrcode = await this.redis.get(`@hiperion.qrcode-${companyId}`);
 
