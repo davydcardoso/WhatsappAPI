@@ -21,7 +21,6 @@ export class SessionsMapper {
 
   static toPersistence(raw: Sessions) {
     return {
-      account_id: raw.accountId,
       companys_id: raw.accountId,
       status: raw.status,
       wa_browser_id: raw.waBrowserId,
