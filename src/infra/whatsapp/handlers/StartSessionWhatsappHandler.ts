@@ -8,6 +8,7 @@ import { Client, ClientSession } from "whatsapp-web.js";
 import { generate as QrCodeGenerate } from "qrcode-terminal";
 import { WhatsappHandler } from "@core/infra/WhatsappHandler";
 import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
+import { QrCodeImageNotFoundError } from "@modules/whatsapp/useCases/GetQrCodeSessionWhatsapp/errors/QrCodeImageNotFoundError";
 
 type StartSessionWhatsappHandlerResponse = {
   session: Client;
@@ -53,8 +54,10 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
             }
 
             if (loginAttempts >= 5) {
-              fs.unlink(`./public/qrcode/${companyId}.png`, err => {
+              fs.unlink(`./public/qrcode/${companyId}.png`, async err => {
                 if (err) return;
+
+                await this.redis.del(`@hiperion.qrcode-${companyId}`);
               });
               reject(new Error("Maximum attempts reached"));
               return;
@@ -62,21 +65,40 @@ export class StartSessionWhatsappHandler implements WhatsappHandler {
 
             loginAttempts++;
 
-            QrCode.toFile(
-              `./public/qrcode/${companyId}.png`,
-              qrcode,
-              {
-                color: {
-                  light: "#FFF"
+            await new Promise<void>((resolve, reject) => {
+              QrCode.toFile(
+                `./public/qrcode/${companyId}.png`,
+                qrcode,
+                {
+                  color: {
+                    light: "#FFF"
+                  }
+                },
+                err => {
+                  if (err) {
+                    reject(new Error(err.message));
+                    return;
+                  }
+                  resolve();
                 }
-              },
-              err => {
-                if (err) {
-                  reject(new Error(err.message));
-                  return;
+              );
+            });
+
+            await new Promise<void>((resolve, reject) => {
+              fs.readFile(
+                `./public/qrcode/${companyId}.png`,
+                "base64",
+                async (err, data) => {
+                  if (err) {
+                    reject(new QrCodeImageNotFoundError());
+                  }
+
+                  await this.redis.set(`@hiperion.qrcode-${companyId}`, data);
+
+                  resolve();
                 }
-              }
-            );
+              );
+            });
 
             io.emit("whatsapp.qrcode", {
               token: companyId,

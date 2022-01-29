@@ -1,6 +1,7 @@
 import fs from "fs";
-import { Either, right } from "@core/logic/Either";
+import { Either, left, right } from "@core/logic/Either";
 import { QrCodeImageNotFoundError } from "./errors/QrCodeImageNotFoundError";
+import { Redis } from "ioredis";
 
 type GetQrCodeSessionWhatsappRequest = {
   companyId: string;
@@ -13,20 +14,28 @@ type ResponseData = {
 };
 
 export class GetQrCodeSessionWhatsapp {
+  constructor(private redis: Redis) {}
+
   async perform({
     companyId
   }: GetQrCodeSessionWhatsappRequest): Promise<GetQrCodeSessionWhatsappResponse> {
     const fileName = `./public/qrcode/${companyId}.png`;
 
-    const qrcode = await new Promise<string>((resolve, reject) => {
-      fs.readFile(fileName, "base64", (err, data) => {
-        if (err) {
-          reject(new QrCodeImageNotFoundError());
-        }
+    const qrcode = await this.redis.get(`@hiperion.qrcode-${companyId}`);
 
-        resolve(data);
-      });
-    });
+    if (!qrcode || qrcode === null) {
+      return left(new QrCodeImageNotFoundError());
+    }
+
+    // const qrcode = await new Promise<string>((resolve, reject) => {
+    //   fs.readFile(fileName, "base64", (err, data) => {
+    //     if (err) {
+    //       reject(new QrCodeImageNotFoundError());
+    //     }
+
+    //     resolve(data);
+    //   });
+    // });
 
     return right({ qrcode });
   }
