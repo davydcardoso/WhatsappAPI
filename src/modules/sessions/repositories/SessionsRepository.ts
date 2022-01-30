@@ -5,4 +5,5 @@ export interface SessionsRepository {
   create(session: Sessions): Promise<void>;
   updateStatus(accountId: string, status: string): Promise<void>;
   findMany(): Promise<Sessions[]>;
+  delete(companyId: string): Promise<void>;
 }

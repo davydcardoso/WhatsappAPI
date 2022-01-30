@@ -15,7 +15,7 @@ export async function startWhatsappMonitor(
   whatsapp: Client,
   token: string
 ): Promise<void> {
-  whatsapp.on("message_create", async (message) => {
+  whatsapp.on("message_create", async message => {
     await startWhatsappMessageListener(token, message, whatsapp);
   });
 
@@ -30,14 +30,14 @@ export async function startWhatsappMonitor(
     logger.info(`Whatsapp started successfully | token ${token}`);
   });
 
-  whatsapp.on("change_state", async (state) => {
+  whatsapp.on("change_state", async state => {
     io.emit("whatsapp.change_state", token);
     logger.info(`Monitor session: ${token} status: ${state}`);
   });
 
-  whatsapp.on("disconnected", async (reason) => {
+  whatsapp.on("disconnected", async reason => {
     logger.info(`Disconnected session: ${token}, reason: ${reason}`);
     io.emit("whatsapp.disconnected", token);
-    await prismaSessionsRepository.updateStatus(token, "CLOSED");
+    await prismaSessionsRepository.delete(token);
   });
 }

@@ -38,7 +38,7 @@ model Accounts {
   created_at DateTime @default(now()) @db.Date
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp
 
-  messages Messages[]
+  // messages Messages[]
 
   @@map("accounts")
 }
@@ -73,12 +73,32 @@ model Sessions {
 }
 
 model Messages {
-  id         String @id @default(uuid())
-  account_id String
+  id         String  @id @default(uuid())
+  company_id String
+  ack        Int     @default(0)
+  read       Boolean @default(false)
+  from_me    Boolean @default(false)
+  body       String  @db.Text
+  is_media   Boolean @default(false)
+  is_deleted Boolean @default(false)
 
-  accounts Accounts? @relation(fields: [account_id], references: [id])
+  created_at DateTime  @default(now()) @db.Date
+  updated_at DateTime? @updatedAt @db.Timestamp()
+
+  // accounts Accounts? @relation(fields: [account_id], references: [id])
 
   @@map("messages")
+}
+
+model MessagesMedia {
+  id         String @id @default(uuid())
+  media_url  String
+  media_type String
+
+  created_at DateTime @default(now()) @db.Date
+  updated_at DateTime @updatedAt @db.Timestamp()
+
+  @@map("messages_media")
 }
 
 model ContactsGroups {

@@ -26,6 +26,10 @@ export class PrismaSessionsRepository implements SessionsRepository {
     return SessionsMapper.toDomain(sessions);
   }
 
+  async delete(companys_id: string): Promise<void> {
+    await prisma.sessions.delete({ where: { companys_id } });
+  }
+
   async findMany(): Promise<Sessions[]> {
     const sessions = await prisma.sessions.findMany({});
 

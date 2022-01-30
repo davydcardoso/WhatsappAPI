@@ -1,5 +1,7 @@
 import { WhatsappMessageListener } from "@core/infra/WhatsappListener";
 import { CompanysRepository } from "@modules/companys/repositories/CompanysRepository";
+import { Messages } from "@modules/whatsapp/domain/messages/messages";
+import { MessagesRepository } from "@modules/whatsapp/repositories/MessagesRepository";
 import { logger } from "@util/logger";
 import axios from "axios";
 import { Message, Client } from "whatsapp-web.js";
@@ -30,7 +32,10 @@ type WebhookResponseData = {
 };
 
 export class StartMessageWhatsappListener implements WhatsappMessageListener {
-  constructor(private companysRepository: CompanysRepository) {}
+  constructor(
+    private companysRepository: CompanysRepository,
+    private messagesRepository: MessagesRepository
+  ) {}
 
   async perform(token: string, message: Message): Promise<void> {
     if (message.fromMe) {
@@ -38,6 +43,23 @@ export class StartMessageWhatsappListener implements WhatsappMessageListener {
     }
 
     const { webhook } = await this.companysRepository.findById(token);
+
+    const contact = await message.getContact();
+    const media = await message.downloadMedia();
+
+    const messagesOrError = Messages.create({
+      companyId: token,
+      ack: message.ack,
+      body: message.body,
+      fromMe: message.fromMe,
+      isDeleted: false,
+      isMedia: message.hasMedia,
+      read: false
+    });
+
+    if (messagesOrError.isRight()) {
+      await this.messagesRepository.create(messagesOrError.value);
+    }
 
     if (!webhook) {
       logger.warn(`Client does not have a registered webhook | token ${token}`);
@@ -48,9 +70,6 @@ export class StartMessageWhatsappListener implements WhatsappMessageListener {
       logger.warn(`Client does not have a registered webhook | token ${token}`);
       return;
     }
-
-    const contact = await message.getContact();
-    const media = await message.downloadMedia();
 
     const api = axios.create({
       baseURL: webhook.value,
