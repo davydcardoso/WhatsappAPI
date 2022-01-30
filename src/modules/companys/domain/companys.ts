@@ -22,6 +22,7 @@ type CompanysProps = {
   email: Email;
   phone: Phone;
   webhook: Webhook;
+  ambient: string;
 };
 
 export class Companys extends Entity<CompanysProps> {
@@ -55,6 +56,10 @@ export class Companys extends Entity<CompanysProps> {
 
   get actived() {
     return this.props.actived;
+  }
+
+  get ambient() {
+    return this.props.ambient;
   }
 
   private constructor(props: CompanysProps, id?: string) {

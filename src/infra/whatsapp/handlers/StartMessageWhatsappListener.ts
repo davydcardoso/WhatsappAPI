@@ -42,23 +42,25 @@ export class StartMessageWhatsappListener implements WhatsappMessageListener {
       return;
     }
 
-    const { webhook } = await this.companysRepository.findById(token);
+    const { webhook, ambient } = await this.companysRepository.findById(token);
 
     const contact = await message.getContact();
     const media = await message.downloadMedia();
 
-    const messagesOrError = Messages.create({
-      companyId: token,
-      ack: message.ack,
-      body: message.body,
-      fromMe: message.fromMe,
-      isDeleted: false,
-      isMedia: message.hasMedia,
-      read: false
-    });
+    if (ambient === "SANDBOX") {
+      const messagesOrError = Messages.create({
+        companyId: token,
+        ack: message.ack,
+        body: message.body,
+        fromMe: message.fromMe,
+        isDeleted: false,
+        isMedia: message.hasMedia,
+        read: false
+      });
 
-    if (messagesOrError.isRight()) {
-      await this.messagesRepository.create(messagesOrError.value);
+      if (messagesOrError.isRight()) {
+        await this.messagesRepository.create(messagesOrError.value);
+      }
     }
 
     if (!webhook) {
